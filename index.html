@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LogiPulse - Supply Chain Shipment Management & Bottleneck Interface</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Chart.js for Supply Chain Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#0b0f19] text-gray-100 flex flex-col min-h-screen">
+
+  <!-- Top Navbar -->
+  <header class="bg-[#111827] border-b border-gray-800 sticky top-0 z-40 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Left: Logo & Project Info -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <i data-lucide="boxes" class="w-6 h-6 text-white"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-extrabold text-xl tracking-tight text-white">Logi<span class="text-blue-500">Pulse</span></span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-blue-900/60 text-blue-300 border border-blue-700/50 font-medium">CA1 Project #8</span>
+            </div>
+            <p class="text-xs text-gray-400">Team: <strong class="text-blue-400 font-semibold">dattasai</strong> | Leader: <strong class="text-gray-200">Datta Sai (12623781)</strong></p>
+          </div>
+        </div>
+
+        <!-- Center: Navigation Tabs -->
+        <nav class="hidden md:flex space-x-1 bg-gray-900/80 p-1 rounded-xl border border-gray-800">
+          <button id="navTabTracking" onclick="switchView('tracking')" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white shadow-sm flex items-center space-x-2 transition">
+            <i data-lucide="navigation" class="w-4 h-4"></i>
+            <span>Live Tracking & Maps</span>
+          </button>
+          <button id="navTabAnalytics" onclick="switchView('analytics')" class="px-4 py-1.5 text-xs font-semibold rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 flex items-center space-x-2 transition">
+            <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+            <span>Bottleneck Analytics</span>
+          </button>
+          <button id="navTabHistory" onclick="switchView('history')" class="px-4 py-1.5 text-xs font-semibold rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 flex items-center space-x-2 transition">
+            <i data-lucide="history" class="w-4 h-4"></i>
+            <span>Shipment History</span>
+          </button>
+          <button id="navTabViva" onclick="switchView('viva')" class="px-4 py-1.5 text-xs font-semibold rounded-lg text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/40 flex items-center space-x-2 transition">
+            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+            <span>CA1 Team & Viva</span>
+          </button>
+        </nav>
+
+        <!-- Right: Action Buttons -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <button onclick="openCreateShipmentModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3.5 py-2 rounded-lg flex items-center space-x-1.5 shadow-lg shadow-blue-600/30 transition transform active:scale-95">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">New Shipment</span>
+          </button>
+
+          <button onclick="exportShipmentsToCSV()" title="Export all shipments data as CSV" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-medium px-3 py-2 rounded-lg border border-gray-700 flex items-center space-x-1.5 transition">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span class="hidden lg:inline">Export</span>
+          </button>
+
+          <button onclick="resetToDefaultData()" title="Reset to official demo scenario data" class="bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-gray-200 p-2 rounded-lg border border-gray-700 transition">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Delay / Bottleneck Alert Banner (Visible when any shipment is delayed) -->
+  <div id="bottleneckAlertBanner" class="bg-gradient-to-r from-red-950/90 via-amber-950/70 to-red-950/90 border-b border-red-800/80 px-4 py-2.5 transition duration-300 shadow-md">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center space-x-3">
+        <span class="flex h-3 w-3 relative">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+        </span>
+        <div class="text-xs text-red-200">
+          <strong class="font-bold text-red-100 flex items-center gap-1 inline-flex">
+            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-red-400 inline"></i> Supply Chain Bottleneck Alert:
+          </strong>
+          <span id="bottleneckBannerText">Nagpur Central Consolidation Hub experiencing +24h dwell backlog. 2 shipments delayed.</span>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="filterByBottlenecksOnly()" class="text-xs bg-red-600/80 hover:bg-red-500 text-white font-medium px-2.5 py-1 rounded border border-red-400/50 transition">
+          Filter Delayed Shipments
+        </button>
+        <button onclick="dismissBottleneckBanner()" class="text-gray-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Bar -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 w-full">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      
+      <!-- Total Shipments -->
+      <div class="bg-[#111827] border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3 shadow-md hover:border-gray-700 transition">
+        <div class="p-2.5 bg-blue-950/80 text-blue-400 rounded-lg border border-blue-800/40">
+          <i data-lucide="package-search" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Total Managed</p>
+          <div class="flex items-baseline space-x-1.5">
+            <h4 id="kpiTotalShipments" class="text-xl font-bold text-white">6</h4>
+            <span class="text-[10px] text-gray-400">Consignments</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- In Transit -->
+      <div class="bg-[#111827] border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3 shadow-md hover:border-gray-700 transition">
+        <div class="p-2.5 bg-cyan-950/80 text-cyan-400 rounded-lg border border-cyan-800/40">
+          <i data-lucide="truck" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider">In Transit</p>
+          <div class="flex items-baseline space-x-1.5">
+            <h4 id="kpiInTransit" class="text-xl font-bold text-cyan-300">4</h4>
+            <span class="text-[10px] text-cyan-500/80">Active Corridors</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottlenecks & Delays -->
+      <div class="bg-[#111827] border border-red-900/40 rounded-xl p-3.5 flex items-center space-x-3 shadow-md hover:border-red-800 transition">
+        <div class="p-2.5 bg-red-950/90 text-red-400 rounded-lg border border-red-800/60 delay-pulse-badge">
+          <i data-lucide="clock-alert" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <p class="text-[11px] font-medium text-red-300 uppercase tracking-wider">Delays / Bottlenecks</p>
+          <div class="flex items-baseline space-x-1.5">
+            <h4 id="kpiDelayedCount" class="text-xl font-bold text-red-400">2</h4>
+            <span class="text-[10px] text-red-400/80">Require Action</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivered / Completed -->
+      <div class="bg-[#111827] border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3 shadow-md hover:border-gray-700 transition">
+        <div class="p-2.5 bg-emerald-950/80 text-emerald-400 rounded-lg border border-emerald-800/40">
+          <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Delivered Rate</p>
+          <div class="flex items-baseline space-x-1.5">
+            <h4 id="kpiDeliveryRate" class="text-xl font-bold text-emerald-400">83.3%</h4>
+            <span class="text-[10px] text-gray-400">On SLA</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Avg Warehouse Dwell Time -->
+      <div class="bg-[#111827] border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3 shadow-md hover:border-gray-700 transition col-span-2 sm:col-span-1">
+        <div class="p-2.5 bg-amber-950/80 text-amber-400 rounded-lg border border-amber-800/40">
+          <i data-lucide="hourglass" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Avg Hub Dwell</p>
+          <div class="flex items-baseline space-x-1.5">
+            <h4 id="kpiAvgDwell" class="text-xl font-bold text-amber-300">16.4 h</h4>
+            <span class="text-[10px] text-amber-500/80">SLA: &le; 18h</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 w-full flex-1">
+
+    <!-- ================= VIEW 1: LIVE TRACKING & MAP INTERFACE ================= -->
+    <div id="viewTracking" class="space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- LEFT COLUMN: Shipment Roster, Search & Filter (5 cols) -->
+        <div class="lg:col-span-5 flex flex-col space-y-3">
+          
+          <!-- Search & Filter Controls Card -->
+          <div class="bg-[#111827] p-3.5 rounded-xl border border-gray-800 shadow-lg space-y-3">
+            <!-- Search bar -->
+            <div class="relative">
+              <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="searchInput" oninput="handleSearchFilter()" placeholder="Search Tracking ID, Goods, Hub, City..." class="w-full bg-gray-900 border border-gray-700 rounded-lg pl-9 pr-3 py-2 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition">
+            </div>
+
+            <!-- Filter Status Pills -->
+            <div class="flex flex-wrap gap-1.5 text-xs">
+              <button onclick="setFilterStatus('All')" class="filter-btn px-2.5 py-1 rounded-md bg-blue-600 text-white font-medium" data-filter="All">All (<span id="countFilterAll">6</span>)</button>
+              <button onclick="setFilterStatus('Active')" class="filter-btn px-2.5 py-1 rounded-md bg-gray-800 text-gray-300 hover:text-white" data-filter="Active">In Transit (<span id="countFilterActive">4</span>)</button>
+              <button onclick="setFilterStatus('Delayed')" class="filter-btn px-2.5 py-1 rounded-md bg-gray-800 text-red-300 hover:text-white hover:bg-red-950/50" data-filter="Delayed">⚠️ Delayed (<span id="countFilterDelayed">2</span>)</button>
+              <button onclick="setFilterStatus('Delivered')" class="filter-btn px-2.5 py-1 rounded-md bg-gray-800 text-emerald-300 hover:text-white hover:bg-emerald-950/50" data-filter="Delivered">Delivered (<span id="countFilterDelivered">1</span>)</button>
+            </div>
+
+            <!-- Secondary Category & Priority Filter -->
+            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-gray-800">
+              <select id="filterCategory" onchange="handleSearchFilter()" class="bg-gray-900 border border-gray-700 text-xs text-gray-300 rounded-lg p-1.5 focus:border-blue-500 focus:outline-none">
+                <option value="">All Categories</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Pharmaceuticals">Pharmaceuticals</option>
+                <option value="Automotive">Automotive</option>
+                <option value="Textiles">Textiles</option>
+                <option value="Telecom">Telecom</option>
+                <option value="Aerospace">Aerospace</option>
+              </select>
+
+              <select id="filterPriority" onchange="handleSearchFilter()" class="bg-gray-900 border border-gray-700 text-xs text-gray-300 rounded-lg p-1.5 focus:border-blue-500 focus:outline-none">
+                <option value="">All Priorities</option>
+                <option value="Urgent">Urgent Priority</option>
+                <option value="Express">Express</option>
+                <option value="Standard">Standard</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Shipment Cards List (Scrollable) -->
+          <div id="shipmentCardsList" class="space-y-2.5 max-h-[700px] overflow-y-auto pr-1">
+            <!-- Dynamically populated by app.js -->
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Detailed Shipment Inspector, Route Map & Milestones (7 cols) -->
+        <div class="lg:col-span-7 flex flex-col space-y-4">
+          
+          <div id="detailContainer" class="bg-[#111827] rounded-xl border border-gray-800 shadow-xl overflow-hidden">
+            
+            <!-- Details Header -->
+            <div class="p-4 bg-gray-900/90 border-b border-gray-800 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div class="flex items-center space-x-2">
+                  <h3 id="detailTrackingId" class="text-lg font-bold text-white tracking-wide">SHP-2026-8810</h3>
+                  <span id="detailStatusBadge" class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-red-950 text-red-300 border border-red-700">Delayed</span>
+                  <span id="detailPriorityBadge" class="text-xs px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800/50">Urgent Priority</span>
+                </div>
+                <p id="detailTitle" class="text-xs text-gray-300 font-medium mt-0.5">High-Precision Industrial Microcontrollers</p>
+              </div>
+
+              <!-- Quick Action Buttons -->
+              <div class="flex items-center space-x-2">
+                <button onclick="advanceCurrentShipmentStage()" title="Simulate goods moving forward in supply chain" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center space-x-1 shadow transition">
+                  <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5"></i>
+                  <span>Advance Stage</span>
+                </button>
+                <button onclick="revertCurrentShipmentStage()" title="Revert to previous milestone" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs px-2.5 py-1.5 rounded-lg border border-gray-700 transition">
+                  <i data-lucide="undo-2" class="w-3.5 h-3.5"></i>
+                </button>
+                <button onclick="openDelayModal()" title="Flag or edit bottleneck delay alert" class="bg-red-950/80 hover:bg-red-900 text-red-300 text-xs px-2.5 py-1.5 rounded-lg border border-red-700 transition flex items-center space-x-1">
+                  <i data-lucide="alert-octagon" class="w-3.5 h-3.5"></i>
+                  <span class="hidden sm:inline">Bottleneck Action</span>
+                </button>
+                <button onclick="openPrintManifestModal()" title="Generate printable shipping waybill manifest" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs p-1.5 rounded-lg border border-gray-700 transition">
+                  <i data-lucide="printer" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Supply Chain Milestone Progress Track -->
+            <div class="p-4 border-b border-gray-800 bg-[#0c121e]">
+              <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+                <span>Supply Chain Journey Progress</span>
+                <span id="detailProgressPercent" class="text-blue-400">40% Completed</span>
+              </div>
+              <div id="milestoneStepsContainer" class="flex items-center justify-between relative">
+                <!-- Dynamically populated milestones in app.js -->
+              </div>
+            </div>
+
+            <!-- Bottleneck Specific Callout Box (when active) -->
+            <div id="detailBottleneckBox" class="hidden p-3.5 mx-4 mt-4 rounded-lg bg-red-950/60 border border-red-700/80 text-xs">
+              <div class="flex items-start justify-between">
+                <div class="flex items-start space-x-2.5">
+                  <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5"></i>
+                  <div>
+                    <h5 class="font-bold text-red-200">Active Bottleneck Detected at: <span id="bottleneckFacility">Nagpur Central Consolidation Hub</span></h5>
+                    <p id="bottleneckCause" class="text-red-300/90 mt-1">Conveyor sorting breakdown and backlog at sorting bay #4.</p>
+                    <p id="bottleneckImpact" class="text-gray-400 mt-1 font-mono text-[11px]">SLA Exceeded by +24h. Suggested fix: Transfer load to South Corridor bypass.</p>
+                  </div>
+                </div>
+                <button onclick="resolveCurrentDelay()" class="ml-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-[11px] px-2.5 py-1 rounded shadow flex items-center space-x-1 transition flex-shrink-0">
+                  <i data-lucide="check" class="w-3 h-3"></i>
+                  <span>Resolve Delay</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Geospatial Supply Chain Map -->
+            <div class="p-4 space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2 text-xs font-semibold text-gray-300">
+                  <i data-lucide="map-pin" class="w-4 h-4 text-blue-400"></i>
+                  <span>Live Corridor Movement & Waypoints Map</span>
+                </div>
+                <span class="text-[11px] text-gray-400">Suppliers ➔ Regional Hubs ➔ Customers</span>
+              </div>
+              <div id="shipmentMap" class="border border-gray-700/70 shadow-inner"></div>
+            </div>
+
+            <!-- Logistics Specs Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-gray-900/60 border-t border-b border-gray-800 text-xs">
+              <div>
+                <span class="text-gray-400 block text-[11px]">Origin Supplier</span>
+                <span id="detailOriginName" class="font-semibold text-gray-100">Foxconn Plant, Pune</span>
+              </div>
+              <div>
+                <span class="text-gray-400 block text-[11px]">Destination Customer</span>
+                <span id="detailDestName" class="font-semibold text-gray-100">Tata Electronics, Hosur</span>
+              </div>
+              <div>
+                <span class="text-gray-400 block text-[11px]">Carrier / Partner</span>
+                <span id="detailCarrier" class="font-semibold text-gray-100">BlueDart Express (Road)</span>
+              </div>
+              <div>
+                <span class="text-gray-400 block text-[11px]">Est. Delivery SLA</span>
+                <span id="detailEstimatedDate" class="font-semibold text-amber-300">Oct 21, 2026</span>
+              </div>
+            </div>
+
+            <!-- Status Timeline & Dynamic Checkpoint Logs -->
+            <div class="p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2 text-xs font-semibold text-gray-300">
+                  <i data-lucide="history" class="w-4 h-4 text-indigo-400"></i>
+                  <span>Status Timeline & Milestone Audit Trail</span>
+                </div>
+                <span class="text-[11px] text-gray-400">Chronological Checkpoints</span>
+              </div>
+
+              <!-- Quick Add Checkpoint Form (Viva Demo Friendly!) -->
+              <div class="flex gap-2 p-2 bg-gray-900/90 rounded-lg border border-gray-800">
+                <input type="text" id="newCheckpointNote" placeholder="Add live transit update note (e.g. 'Passed Toll Plaza 4', 'Security inspection cleared')..." class="bg-gray-800 border border-gray-700 rounded px-2.5 py-1 text-xs text-gray-200 placeholder-gray-500 flex-1 focus:outline-none focus:border-blue-500">
+                <button onclick="addManualCheckpointLog()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1 rounded font-medium transition flex items-center space-x-1">
+                  <i data-lucide="send" class="w-3 h-3"></i>
+                  <span>Add Log</span>
+                </button>
+              </div>
+
+              <!-- Timeline Items Container -->
+              <div id="timelineContainer" class="relative pl-6 space-y-4 pt-2">
+                <!-- Dynamically rendered timeline in app.js -->
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= VIEW 2: BOTTLENECK & DWELL TIME ANALYTICS ================= -->
+    <div id="viewAnalytics" class="hidden space-y-6">
+      
+      <!-- Analytics Header -->
+      <div class="bg-[#111827] p-5 rounded-xl border border-gray-800 shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="activity" class="w-5 h-5 text-red-400"></i>
+            Supply Chain Bottleneck & Facility Dwell Time Intelligence
+          </h2>
+          <p class="text-xs text-gray-400 mt-1">Analyze dwell latency across warehouses, highway corridors, and transit hubs to prevent delivery failure.</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-xs px-3 py-1 rounded-full bg-red-950 text-red-300 border border-red-800 font-medium">SLA Threshold: 18h Maximum</span>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        
+        <!-- Chart 1: Average Dwell Time by Supply Chain Stage -->
+        <div class="bg-[#111827] p-4 rounded-xl border border-gray-800 shadow-lg space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="hourglass" class="w-4 h-4 text-blue-400"></i>
+              Average Dwell Time by Supply Chain Node (Hours)
+            </h4>
+            <span class="text-[10px] text-gray-400">Target vs Actual</span>
+          </div>
+          <div class="h-64">
+            <canvas id="dwellTimeChart"></canvas>
+          </div>
+          <p class="text-[11px] text-gray-400">Critical Insight: <strong>Regional Warehouses</strong> suffer the highest stagnation (average 24.6h) due to manual sorting queues.</p>
+        </div>
+
+        <!-- Chart 2: Root Causes of Supply Chain Delays -->
+        <div class="bg-[#111827] p-4 rounded-xl border border-gray-800 shadow-lg space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-amber-400"></i>
+              Delay Root Cause Distribution
+            </h4>
+            <span class="text-[10px] text-gray-400">Historical Disruption Drivers</span>
+          </div>
+          <div class="h-64 flex justify-center">
+            <canvas id="delayCausesChart"></canvas>
+          </div>
+          <p class="text-[11px] text-gray-400">Primary Bottleneck Driver: <strong>Warehouse Sorting Congestion (42%)</strong> followed by <strong>Monsoon Highway Landslides (28%)</strong>.</p>
+        </div>
+
+      </div>
+
+      <!-- Identified Bottlenecks Table -->
+      <div class="bg-[#111827] p-4 rounded-xl border border-gray-800 shadow-lg space-y-3">
+        <h4 class="text-xs font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
+          <i data-lucide="alert-octagon" class="w-4 h-4 text-red-400"></i>
+          Facility Bottleneck Risk Registry & Action Plan
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-gray-300">
+            <thead class="bg-gray-900 text-gray-400 uppercase text-[10px] border-b border-gray-800">
+              <tr>
+                <th class="p-3">Facility Name</th>
+                <th class="p-3">Facility Type</th>
+                <th class="p-3">Avg Dwell</th>
+                <th class="p-3">SLA Target</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Primary Root Cause</th>
+                <th class="p-3">Mitigation / Recommendation</th>
+              </tr>
+            </thead>
+            <tbody id="bottleneckRegistryTable" class="divide-y divide-gray-800">
+              <!-- Dynamically populated in app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= VIEW 3: SHIPMENT HISTORY & AUDITS ================= -->
+    <div id="viewHistory" class="hidden space-y-4">
+      
+      <div class="bg-[#111827] p-5 rounded-xl border border-gray-800 shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="archive" class="w-5 h-5 text-indigo-400"></i>
+            Master Shipment Ledger & Historical Audit Trail
+          </h2>
+          <p class="text-xs text-gray-400 mt-1">Complete historical record of goods moved between suppliers, warehouses, and customer endpoints.</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="exportShipmentsToCSV()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3.5 py-2 rounded-lg flex items-center space-x-1.5 transition">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+            <span>Export to CSV / Excel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Historical Ledger Table -->
+      <div class="bg-[#111827] rounded-xl border border-gray-800 shadow-lg overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-gray-200">
+            <thead class="bg-gray-900 text-gray-400 uppercase text-[10px] border-b border-gray-800">
+              <tr>
+                <th class="p-3">Tracking ID</th>
+                <th class="p-3">Cargo Title</th>
+                <th class="p-3">Category</th>
+                <th class="p-3">Carrier</th>
+                <th class="p-3">Origin</th>
+                <th class="p-3">Destination</th>
+                <th class="p-3">Current Stage</th>
+                <th class="p-3">Status</th>
+                <th class="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody" class="divide-y divide-gray-800">
+              <!-- Dynamically filled in app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= VIEW 4: CA1 TEAM & VIVA DOCUMENTATION ================= -->
+    <div id="viewViva" class="hidden space-y-6">
+      
+      <!-- Academic Header -->
+      <div class="bg-gradient-to-r from-blue-950/70 via-gray-900 to-indigo-950/70 p-6 rounded-xl border border-blue-800/50 shadow-xl">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-400 bg-blue-950/80 px-2.5 py-1 rounded border border-blue-700/50">CA1 Project-Based Assessment</span>
+            <h1 class="text-2xl font-extrabold text-white mt-2">LogiPulse - Supply Chain Shipment & Bottleneck Intelligence System</h1>
+            <p class="text-xs text-gray-300 mt-1 max-w-3xl">
+              <strong>Problem Statement #8:</strong> Businesses moving goods between suppliers, warehouses, and customers need visibility into shipment stages to identify delays and bottlenecks.
+            </p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-gray-400 block">Total Marks: <strong class="text-emerald-400 text-lg">30 Marks</strong></span>
+            <span class="text-[11px] text-gray-400">UI: 15 | Viva: 10 | Video: 5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Members & Contribution Grid -->
+      <div class="bg-[#111827] p-5 rounded-xl border border-gray-800 shadow-lg space-y-4">
+        <h3 class="text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
+          <i data-lucide="users" class="w-4 h-4 text-blue-400"></i>
+          Project Team Members & Work Distribution Matrix
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Member 1: Leader -->
+          <div class="bg-gray-900/90 p-4 rounded-xl border border-blue-700/50 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-blue-400 bg-blue-950 px-2 py-0.5 rounded border border-blue-800">Team Leader</span>
+              <span class="text-[11px] text-gray-400">Reg: 12623781</span>
+            </div>
+            <h4 class="text-base font-bold text-white">Datta Sai</h4>
+            <p class="text-xs text-gray-300"><strong>Team Name:</strong> dattasai</p>
+            <div class="text-[11px] text-gray-400 space-y-1 pt-2 border-t border-gray-800">
+              <p><strong>Core Contribution:</strong></p>
+              <ul class="list-disc list-inside space-y-0.5 text-gray-300">
+                <li>System Architecture & State Engine</li>
+                <li>Shipment Creation CRUD & Data Schema</li>
+                <li>Stage Advancement & Rollback Logic</li>
+                <li>GitHub Repository & Deployment Setup</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Member 2 -->
+          <div class="bg-gray-900/90 p-4 rounded-xl border border-gray-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-gray-400 bg-gray-800 px-2 py-0.5 rounded">Team Member 2</span>
+              <span class="text-[11px] text-gray-400">Reg: 12629667</span>
+            </div>
+            <h4 class="text-base font-bold text-white">Team Member 2</h4>
+            <p class="text-xs text-gray-300"><strong>Role:</strong> Frontend & UI/UX Specialist</p>
+            <div class="text-[11px] text-gray-400 space-y-1 pt-2 border-t border-gray-800">
+              <p><strong>Core Contribution:</strong></p>
+              <ul class="list-disc list-inside space-y-0.5 text-gray-300">
+                <li>Responsive Dashboard & Dark UI Styling</li>
+                <li>Interactive Leaflet Map Integration</li>
+                <li>Supply Chain Milestone Visualizer Bar</li>
+                <li>Printable Shipping Manifest Waybill</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Member 3 -->
+          <div class="bg-gray-900/90 p-4 rounded-xl border border-gray-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-gray-400 bg-gray-800 px-2 py-0.5 rounded">Team Member 3</span>
+              <span class="text-[11px] text-gray-400">Reg: 12610145</span>
+            </div>
+            <h4 class="text-base font-bold text-white">Team Member 3</h4>
+            <p class="text-xs text-gray-300"><strong>Role:</strong> Analytics & Testing Specialist</p>
+            <div class="text-[11px] text-gray-400 space-y-1 pt-2 border-t border-gray-800">
+              <p><strong>Core Contribution:</strong></p>
+              <ul class="list-disc list-inside space-y-0.5 text-gray-300">
+                <li>Bottleneck Detection Algorithm & Dwell SLA</li>
+                <li>Chart.js Analytics (Dwell Time & Causes)</li>
+                <li>Status Timeline & Audit Event Logger</li>
+                <li>CSV / Excel Export Functionality</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rubrics Mapping Guide -->
+      <div class="bg-[#111827] p-5 rounded-xl border border-gray-800 shadow-lg space-y-3">
+        <h3 class="text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
+          <i data-lucide="check-square" class="w-4 h-4 text-emerald-400"></i>
+          CA1 Evaluation Rubrics Compliance Breakdown
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div class="bg-gray-900/60 p-3.5 rounded-lg border border-gray-800 space-y-2">
+            <div class="flex items-center justify-between font-bold text-white border-b border-gray-800 pb-1.5">
+              <span>Functionality & UI</span>
+              <span class="text-emerald-400">15 Marks</span>
+            </div>
+            <ul class="space-y-1 text-gray-300 text-[11px]">
+              <li>&#10003; All 6 core requirements fully functional</li>
+              <li>&#10003; Responsive multi-panel interface</li>
+              <li>&#10003; Pure HTML5, CSS3, ES6 JavaScript</li>
+              <li>&#10003; Instant local persistence with LocalStorage</li>
+            </ul>
+          </div>
+
+          <div class="bg-gray-900/60 p-3.5 rounded-lg border border-gray-800 space-y-2">
+            <div class="flex items-center justify-between font-bold text-white border-b border-gray-800 pb-1.5">
+              <span>Viva Preparation</span>
+              <span class="text-emerald-400">10 Marks</span>
+            </div>
+            <ul class="space-y-1 text-gray-300 text-[11px]">
+              <li>&#10003; Prepared source code walkthrough</li>
+              <li>&#10003; Ready for live code modifications</li>
+              <li>&#10003; Individual contributions documented</li>
+              <li>&#10003; Comprehensive Viva Q&A Guide included</li>
+            </ul>
+          </div>
+
+          <div class="bg-gray-900/60 p-3.5 rounded-lg border border-gray-800 space-y-2">
+            <div class="flex items-center justify-between font-bold text-white border-b border-gray-800 pb-1.5">
+              <span>Video Presentation</span>
+              <span class="text-emerald-400">5 Marks</span>
+            </div>
+            <ul class="space-y-1 text-gray-300 text-[11px]">
+              <li>&#10003; Complete script for all 3 members</li>
+              <li>&#10003; Problem identification & motivation</li>
+              <li>&#10003; Live feature demonstration cues</li>
+              <li>&#10003; Technology & outcomes summary</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- MODAL 1: Create New Shipment -->
+  <div id="createShipmentModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-[#111827] border border-gray-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <div class="p-2 bg-blue-950 text-blue-400 rounded-lg">
+            <i data-lucide="package-plus" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-base font-bold text-white">Create New Supply Chain Shipment</h3>
+        </div>
+        <button onclick="closeCreateShipmentModal()" class="text-gray-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="createShipmentForm" onsubmit="handleCreateShipmentSubmit(event)" class="space-y-4 text-xs">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-gray-300 font-medium mb-1">Cargo / Goods Title *</label>
+            <input type="text" id="newTitle" required placeholder="e.g. 500x Solar Inverters" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 focus:border-blue-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-gray-300 font-medium mb-1">Cargo Category *</label>
+            <select id="newCategory" required class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 focus:border-blue-500 focus:outline-none">
+              <option value="Electronics">Electronics</option>
+              <option value="Pharmaceuticals">Pharmaceuticals</option>
+              <option value="Automotive">Automotive</option>
+              <option value="Textiles">Textiles</option>
+              <option value="Telecom">Telecom</option>
+              <option value="Aerospace">Aerospace</option>
+              <option value="Industrial">Industrial Goods</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-gray-300 font-medium mb-1">Carrier Partner *</label>
+            <select id="newCarrier" required class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 focus:border-blue-500 focus:outline-none">
+              <option value="BlueDart Express">BlueDart Express</option>
+              <option value="DHL Global Forwarding">DHL Global Forwarding</option>
+              <option value="Delhivery Freight">Delhivery Freight</option>
+              <option value="FedEx Critical">FedEx Critical</option>
+              <option value="TCI Freight">TCI Freight</option>
+              <option value="Gati-KWE">Gati-KWE</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-300 font-medium mb-1">Transport Mode *</label>
+            <select id="newTransportMode" required class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 focus:border-blue-500 focus:outline-none">
+              <option value="Road Express">Road Express</option>
+              <option value="Air Freight">Air Freight</option>
+              <option value="Heavy Rail">Heavy Rail</option>
+              <option value="Maritime Cargo">Maritime Cargo</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-300 font-medium mb-1">Priority Level *</label>
+            <select id="newPriority" required class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 focus:border-blue-500 focus:outline-none">
+              <option value="Urgent">Urgent Priority</option>
+              <option value="Express">Express</option>
+              <option value="Standard">Standard</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-gray-300 font-medium mb-1">Origin Supplier Facility *</label>
+            <select id="newOriginPreset" onchange="handleOriginChange(this.value)" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 focus:border-blue-500 focus:outline-none mb-1">
+              <!-- Populated in JS from PRESET_HUBS -->
+            </select>
+            <input type="text" id="newOriginCity" required placeholder="City, State" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-gray-100 text-xs">
+          </div>
+          <div>
+            <label class="block text-gray-300 font-medium mb-1">Destination Customer Facility *</label>
+            <select id="newDestPreset" onchange="handleDestChange(this.value)" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 focus:border-blue-500 focus:outline-none mb-1">
+              <!-- Populated in JS from PRESET_HUBS -->
+            </select>
+            <input type="text" id="newDestCity" required placeholder="City, State" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-gray-100 text-xs">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-gray-300 font-medium mb-1">Gross Weight (kg) *</label>
+            <input type="text" id="newWeight" required placeholder="e.g. 850 kg" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 focus:border-blue-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-gray-300 font-medium mb-1">Declared Value (₹) *</label>
+            <input type="text" id="newValue" required placeholder="e.g. ₹ 12,00,000" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 focus:border-blue-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-gray-300 font-medium mb-1">Est. Delivery Date *</label>
+            <input type="date" id="newDeliveryDate" required class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-gray-100 focus:border-blue-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-3 border-t border-gray-800">
+          <button type="button" onclick="closeCreateShipmentModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-medium transition">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold shadow-lg shadow-blue-600/30 transition">
+            Register & Dispatch Shipment
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Report / Update Bottleneck & Delay -->
+  <div id="delayModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-[#111827] border border-red-800/80 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <div class="p-2 bg-red-950 text-red-400 rounded-lg">
+            <i data-lucide="alert-octagon" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-base font-bold text-white">Log Supply Chain Bottleneck / Delay</h3>
+        </div>
+        <button onclick="closeDelayModal()" class="text-gray-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="delayForm" onsubmit="handleDelaySubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-gray-300 font-medium mb-1">Bottleneck Location / Facility Name *</label>
+          <input type="text" id="delayFacilityInput" required placeholder="e.g. Nagpur Central Warehouse Bay #4" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-gray-100">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-gray-300 font-medium mb-1">Root Cause Category *</label>
+            <select id="delayCauseCategory" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-gray-100">
+              <option value="Conveyor / Sorter Breakdown">Sorter / Equipment Breakdown</option>
+              <option value="Severe Weather / Flooding">Severe Weather / Monsoon Disruption</option>
+              <option value="Highway Blockade / Landslide">Highway Blockade / Landslide</option>
+              <option value="Port Container Congestion">Port / Customs Congestion</option>
+              <option value="Warehouse Overcapacity">Warehouse Overcapacity (&gt;90%)</option>
+              <option value="Carrier Vehicle Mechanical Failure">Vehicle Breakdown</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-300 font-medium mb-1">Estimated Delay (Hours) *</label>
+            <input type="number" id="delayHoursInput" min="1" max="168" value="24" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-gray-100">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-gray-300 font-medium mb-1">Detailed Operational Impact & Notes *</label>
+          <textarea id="delayImpactInput" rows="3" required placeholder="Explain why goods are stuck and recommended mitigation..." class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-gray-100"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end space-x-2 pt-3 border-t border-gray-800">
+          <button type="button" onclick="closeDelayModal()" class="px-3.5 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg">Cancel</button>
+          <button type="submit" class="px-4 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg font-semibold shadow">Apply Bottleneck Alert</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Printable Shipping Manifest / Waybill -->
+  <div id="printManifestModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white text-gray-900 rounded-2xl max-w-3xl w-full p-8 shadow-2xl space-y-6">
+      
+      <!-- Modal Toolbar (Not printed) -->
+      <div class="flex items-center justify-between border-b pb-4 no-print">
+        <div class="flex items-center space-x-2 text-blue-700">
+          <i data-lucide="file-text" class="w-6 h-6"></i>
+          <span class="font-bold text-lg">Official Supply Chain Bill of Lading & Waybill</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>Print / Save PDF</span>
+          </button>
+          <button onclick="closePrintManifestModal()" class="text-gray-500 hover:text-gray-800 p-1">
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Manifest Document Body -->
+      <div id="manifestDocumentContent" class="space-y-5 text-xs text-gray-800">
+        <!-- Dynamically generated printable content in app.js -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-[#111827] border-t border-gray-800 mt-auto py-4 text-center text-xs text-gray-400">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div>
+        <p>CA1 Project-Based Assessment | Problem #8: Supply Chain Shipment Visibility</p>
+      </div>
+      <div class="text-gray-400">
+        <span>Team: <strong class="text-blue-400">dattasai</strong></span> | 
+        <span>Leader: Datta Sai (12623781)</span> | 
+        <span>Members: 12629667, 12610145</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Logic -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
