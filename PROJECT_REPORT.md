@@ -105,4 +105,3 @@ To develop a responsive, client-side web application interface (**LogiPulse**) t
 ## 6. Deployment & Submission Links
 - **GitHub Repository**: `https://github.com/dattasai2424-code/ca1-shipment-management`
 - **Live Deployed Application (GitHub Pages)**: `https://dattasai2424-code.github.io/ca1-shipment-management/`
-- **Video Presentation URL**: `https://youtu.be/ca1-shipment-demo`
