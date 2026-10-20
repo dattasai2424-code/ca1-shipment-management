@@ -34,13 +34,13 @@ To satisfy the CA1 deployment rubric requirement:
    git add .
    git commit -m "Initial commit for CA1 Problem Statement #8 - Team dattasai"
    git branch -M main
-   git remote add origin https://github.com/<YOUR-USERNAME>/ca1-shipment-management.git
+   git remote add origin https://github.com/dattasai2424-code/ca1-shipment-management.git
    git push -u origin main
    ```
 3. On GitHub, go to **Settings** > **Pages**.
 4. Under **Branch**, select `main` branch and `/ (root)` folder, then click **Save**.
 5. Your project will be live in 60 seconds at:
-   `https://<YOUR-USERNAME>.github.io/ca1-shipment-management/`
+   `https://dattasai2424-code.github.io/ca1-shipment-management/`
 
 ---
 
