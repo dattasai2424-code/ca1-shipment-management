@@ -1,6 +1,6 @@
 /**
  * LogiPulse - Supply Chain Shipment Management & Bottleneck Tracking System
- * Team: dattasai | Team Leader: Datta Sai (Reg: 12623781)
+ * Developer: Datta Sai (Reg: 12623781)
  * Team Members: 12623781, 12629667, 12610145
  * 
  * Default Initial Dataset representing diverse supply chain movements:
