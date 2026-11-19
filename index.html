@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LogiPulse - Supply Chain Shipment Management Interface</title>
+  <title>LogiPulse - Shipment Tracking System</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,21 +15,14 @@
       </div>
       <div>
         <h1 class="logo-text">Logi<span>Pulse</span></h1>
-        <p class="project-tag">CA1 Project Assessment - Problem Statement #8</p>
+        <p class="logo-sub">Shipment Tracking System</p>
       </div>
     </div>
-    <div class="student-details">
-      <p>Developer: <strong>Datta Sai</strong></p>
-      <p>Reg No: <strong>12623781</strong> | Course: <strong>INT219</strong></p>
+    <div class="user-profile">
+      <span class="user-name">Datta Sai</span>
+      <span class="user-id">12623781</span>
     </div>
   </header>
-
-  <div class="sub-bar">
-    <div class="container sub-bar-content">
-      <span class="report-period">Reporting Cycle: <strong>November 2026</strong> | Q4 Supply Chain Assessment</span>
-      <span class="status-live"><span class="pulse-dot"></span> System Live Feed Active</span>
-    </div>
-  </div>
 
   <div class="container">
 
@@ -38,12 +31,12 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
       </div>
       <div class="alert-text">
-        <strong>Supply Chain Bottleneck Alert:</strong>
+        <strong>Delay Alert:</strong>
         <span id="alertMessage">Shipment SHP-101 is delayed at Nagpur Regional Warehouse (+24h delay).</span>
       </div>
       <button class="btn btn-warning" onclick="highlightBottleneck()">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        View Bottleneck
+        View Delay
       </button>
     </div>
 
@@ -51,37 +44,37 @@
       <div class="kpi-card kpi-total">
         <div class="kpi-top">
           <h3>Total Shipments</h3>
-          <span class="trend trend-up">↑ +14.2% MoM</span>
+          <span class="trend trend-neutral">4 Total</span>
         </div>
         <p id="kpiTotal" class="kpi-number">4</p>
-        <span class="kpi-sub">November 2026 Managed Volume</span>
+        <span class="kpi-sub">All Tracked Shipments</span>
       </div>
 
       <div class="kpi-card kpi-transit">
         <div class="kpi-top">
           <h3>In Transit</h3>
-          <span class="trend trend-neutral">→ 2 Active Routes</span>
+          <span class="trend trend-up">2 Moving</span>
         </div>
         <p id="kpiInTransit" class="kpi-number text-blue">2</p>
-        <span class="kpi-sub">On Schedule Across Corridors</span>
+        <span class="kpi-sub">On The Road</span>
       </div>
 
       <div class="kpi-card kpi-delayed">
         <div class="kpi-top">
-          <h3>Bottlenecks</h3>
-          <span class="trend trend-down">⚠ +1 vs Last Week</span>
+          <h3>Delayed</h3>
+          <span class="trend trend-down">1 Delayed</span>
         </div>
         <p id="kpiDelayed" class="kpi-number text-red">1</p>
-        <span class="kpi-sub">Facility Backlog Action Required</span>
+        <span class="kpi-sub">Needs Attention</span>
       </div>
 
       <div class="kpi-card kpi-delivered">
         <div class="kpi-top">
           <h3>Delivered</h3>
-          <span class="trend trend-up">↑ 92.5% On-Time SLA</span>
+          <span class="trend trend-up">1 Delivered</span>
         </div>
         <p id="kpiDelivered" class="kpi-number text-green">1</p>
-        <span class="kpi-sub">Completed Destination Handover</span>
+        <span class="kpi-sub">Completed Deliveries</span>
       </div>
     </div>
 
@@ -89,12 +82,12 @@
 
       <div class="card tracking-panel">
         <div class="card-header">
-          <h2>Live Shipment Tracking & Stage Visibility</h2>
+          <h2>Shipment Stage Tracking</h2>
           <span id="detailBadge" class="badge badge-warning">Delayed</span>
         </div>
 
         <div class="tracker-box">
-          <p class="tracker-title">5-Stage Transport Route (Supplier to Customer):</p>
+          <p class="tracker-title">5 Transport Stages (Supplier to Customer):</p>
           <div class="stage-steps">
             <div id="step-0" class="step done">
               <div class="step-num">1</div>
@@ -152,11 +145,11 @@
 
           <div class="info-row">
             <div>
-              <span class="info-label">Logistics Carrier</span>
+              <span class="info-label">Carrier</span>
               <p id="detailCarrier" class="info-value">BlueDart Express</p>
             </div>
             <div>
-              <span class="info-label">Dispatched Date</span>
+              <span class="info-label">Date</span>
               <p id="detailDate" class="info-value">Nov 16, 2026</p>
             </div>
           </div>
@@ -180,7 +173,7 @@
           <div class="action-buttons">
             <button class="btn btn-primary" onclick="advanceStage()">
               <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-              Move to Next Stage
+              Next Stage
             </button>
             <button class="btn btn-danger" onclick="markDelayed()">
               <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
@@ -188,7 +181,7 @@
             </button>
             <button class="btn btn-secondary" onclick="markOnSchedule()">
               <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              Mark On Schedule
+              On Schedule
             </button>
           </div>
         </div>
@@ -196,7 +189,7 @@
 
       <div class="card form-panel">
         <div class="card-header">
-          <h2>Create New Shipment</h2>
+          <h2>Add New Shipment</h2>
         </div>
         <form id="createShipmentForm" onsubmit="handleCreateShipment(event)">
           <div class="form-group">
@@ -206,7 +199,7 @@
 
           <div class="form-group">
             <label for="cargoTitle">Cargo Description *</label>
-            <input type="text" id="cargoTitle" placeholder="e.g. Industrial Automation Motors" required>
+            <input type="text" id="cargoTitle" placeholder="e.g. Electric Vehicle Batteries" required>
           </div>
 
           <div class="form-group">
@@ -221,7 +214,7 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="carrierName">Carrier Service</label>
+              <label for="carrierName">Carrier</label>
               <select id="carrierName">
                 <option value="BlueDart Express">BlueDart Express</option>
                 <option value="DHL Supply Chain">DHL Supply Chain</option>
@@ -231,7 +224,7 @@
             </div>
 
             <div class="form-group">
-              <label for="initialStage">Starting Stage</label>
+              <label for="initialStage">Start Stage</label>
               <select id="initialStage">
                 <option value="0">1. Supplier Dispatched</option>
                 <option value="1">2. In Transit Hub</option>
@@ -252,8 +245,7 @@
     <div class="card table-panel">
       <div class="table-header-bar">
         <div>
-          <h2>All Shipments & Bottleneck History</h2>
-          <p class="table-sub">Live monitoring across Indian multimodal transport hubs - November 2026</p>
+          <h2>All Shipments</h2>
         </div>
         
         <div class="table-controls">
@@ -264,12 +256,12 @@
           <select id="filterStatus" onchange="filterShipments()">
             <option value="All">All Statuses</option>
             <option value="In Transit">In Transit</option>
-            <option value="Delayed">Delayed (Bottleneck)</option>
+            <option value="Delayed">Delayed</option>
             <option value="Delivered">Delivered</option>
           </select>
           <button class="btn btn-secondary" onclick="resetData()">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
-            Reset Data
+            Reset
           </button>
         </div>
       </div>
@@ -283,7 +275,7 @@
               <th>Supplier (Origin)</th>
               <th>Customer (Destination)</th>
               <th>Carrier</th>
-              <th>Dispatched</th>
+              <th>Date</th>
               <th>Current Stage</th>
               <th>Status</th>
               <th>Action</th>
@@ -298,8 +290,7 @@
   </div>
 
   <footer class="footer">
-    <p>CA1 Project-Based Assessment | Problem Statement #8: Supply Chain Shipment Visibility</p>
-    <p>Student: <strong>Datta Sai</strong> | Registration No: <strong>12623781</strong> | Course: <strong>INT219 Front-End Web Development</strong> | Reporting Period: <strong>November 2026</strong></p>
+    <p>LogiPulse Shipment Tracking System &bull; Datta Sai (12623781) &bull; INT219 Front-End Web Development</p>
   </footer>
 
   <script src="app.js"></script>

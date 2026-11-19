@@ -6,7 +6,7 @@
 }
 
 body {
-  background-color: #f1f5f9;
+  background-color: #f8fafc;
   color: #1e293b;
   line-height: 1.5;
 }
@@ -25,8 +25,8 @@ body {
 }
 
 .navbar {
-  background-color: #0f172a;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #0f172a;
   padding: 14px 28px;
   display: flex;
   justify-content: space-between;
@@ -48,69 +48,49 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 .logo-text {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.3px;
-}
-
-.logo-text span {
-  color: #38bdf8;
-}
-
-.project-tag {
-  font-size: 11px;
-  color: #94a3b8;
-}
-
-.student-details {
-  text-align: right;
-  font-size: 13px;
-  color: #cbd5e1;
-}
-
-.student-details strong {
-  color: #38bdf8;
-}
-
-.sub-bar {
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 8px 0;
-  font-size: 12px;
-}
-
-.sub-bar-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.report-period {
-  color: #475569;
-}
-
-.report-period strong {
   color: #0f172a;
 }
 
-.status-live {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #16a34a;
-  font-weight: 600;
+.logo-text span {
+  color: #2563eb;
 }
 
-.pulse-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #16a34a;
-  display: inline-block;
+.logo-sub {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.user-id {
+  font-size: 11px;
+  color: #2563eb;
+  background-color: #dbeafe;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
 }
 
 .container {
@@ -124,7 +104,7 @@ body {
   border: 1px solid #fecaca;
   border-left: 4px solid #dc2626;
   padding: 12px 18px;
-  border-radius: 6px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -159,7 +139,7 @@ body {
 .kpi-card {
   background-color: #ffffff;
   padding: 16px 18px;
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
@@ -167,19 +147,19 @@ body {
 }
 
 .kpi-total {
-  border-top: 4px solid #64748b;
+  border-top: 3px solid #64748b;
 }
 
 .kpi-transit {
-  border-top: 4px solid #2563eb;
+  border-top: 3px solid #2563eb;
 }
 
 .kpi-delayed {
-  border-top: 4px solid #dc2626;
+  border-top: 3px solid #dc2626;
 }
 
 .kpi-delivered {
-  border-top: 4px solid #16a34a;
+  border-top: 3px solid #16a34a;
 }
 
 .kpi-top {
@@ -194,14 +174,14 @@ body {
   color: #64748b;
   text-transform: uppercase;
   font-weight: 600;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
 }
 
 .trend {
   font-size: 11px;
   font-weight: 600;
   padding: 2px 7px;
-  border-radius: 12px;
+  border-radius: 3px;
 }
 
 .trend-up {
@@ -215,8 +195,8 @@ body {
 }
 
 .trend-neutral {
-  background-color: #e0f2fe;
-  color: #0369a1;
+  background-color: #f1f5f9;
+  color: #475569;
 }
 
 .kpi-number {
@@ -244,7 +224,7 @@ body {
 
 .card {
   background-color: #ffffff;
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px solid #e2e8f0;
   padding: 20px;
 }
@@ -281,7 +261,7 @@ body {
 .tracker-box {
   background-color: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-radius: 4px;
   padding: 16px;
   margin-bottom: 16px;
 }
@@ -535,11 +515,6 @@ body {
   font-weight: 700;
 }
 
-.table-sub {
-  font-size: 12px;
-  color: #64748b;
-}
-
 .table-controls {
   display: flex;
   gap: 8px;
@@ -634,17 +609,13 @@ body {
 }
 
 .footer {
-  background-color: #0f172a;
-  color: #94a3b8;
+  background-color: #ffffff;
+  color: #64748b;
   text-align: center;
   padding: 18px 12px;
   font-size: 12px;
   margin-top: 30px;
-  border-top: 1px solid #334155;
-}
-
-.footer strong {
-  color: #38bdf8;
+  border-top: 1px solid #e2e8f0;
 }
 
 @media (max-width: 900px) {
@@ -661,9 +632,6 @@ body {
     flex-direction: column;
     text-align: center;
     gap: 10px;
-  }
-  .student-details {
-    text-align: center;
   }
   .kpi-grid {
     grid-template-columns: 1fr;
