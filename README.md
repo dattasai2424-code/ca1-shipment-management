@@ -6,7 +6,7 @@
 ## Student Information
 - **Student Developer**: Datta Sai
 - **Registration Number**: 12623781
-- **Course**: INT219 Front-End Web Development
+- **Course**: CSE326 Internet, Technology and Web Basics
 - **Assigned Problem Statement**: Businesses moving goods between suppliers, warehouses, and customers need visibility into shipment stages to identify delays and bottlenecks.
 - **Reporting Period**: November 2026 (Q4 Supply Chain Cycle)
 
