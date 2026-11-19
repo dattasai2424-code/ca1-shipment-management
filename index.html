@@ -4,668 +4,260 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LogiPulse - Supply Chain Shipment Management Interface</title>
+  <!-- Basic External CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Top Navigation Header -->
-  <header class="header">
-    <div class="header-left">
-      <div class="logo-box">LP</div>
+  <!-- 1. Top Header with Student and Project Information -->
+  <header class="navbar">
+    <div class="navbar-brand">
+      <div class="logo-icon">&#128230;</div>
       <div>
-        <h1 class="logo-title">Logi<span>Pulse</span></h1>
-        <p class="student-info">Student: <strong>Datta Sai</strong> | Reg No: <strong>12623781</strong> | Problem #8</p>
+        <h1 class="logo-text">Logi<span>Pulse</span></h1>
+        <p class="project-tag">CA1 Project Assessment - Problem Statement #8</p>
       </div>
     </div>
-
-    <!-- Navigation Menu Tabs -->
-    <nav class="nav-menu">
-      <button class="nav-btn active" onclick="switchTab('dashboard')">Live Tracking</button>
-      <button class="nav-btn" onclick="switchTab('analytics')">Dwell Analytics</button>
-      <button class="nav-btn" onclick="switchTab('history')">Shipment History</button>
-      <button class="nav-btn" onclick="switchTab('details')">Project Details</button>
-    </nav>
-
-    <!-- Top Action Buttons -->
-    <div class="header-right">
-      <button class="btn btn-primary" onclick="openModal('createModal')">+ New Shipment</button>
-      <button class="btn btn-secondary" onclick="exportToCSV()">Export CSV</button>
-      <button class="btn btn-outline" onclick="resetDefaultData()">Reset Data</button>
+    <div class="student-details">
+      <p>Developer: <strong>Datta Sai</strong></p>
+      <p>Reg No: <strong>12623781</strong> | Course: <strong>INT219</strong></p>
     </div>
   </header>
 
-  <!-- Emergency Bottleneck Delay Alert Banner -->
-  <div id="delayBanner" class="alert-banner">
-    <div class="alert-content">
-      <span class="alert-icon">&#9888;</span>
-      <div>
-        <strong>Supply Chain Delay Alert:</strong>
-        <span id="delayBannerText">Nagpur Central Warehouse experiencing backlog (+24h dwell). Immediate action needed.</span>
-      </div>
-    </div>
-    <div class="alert-actions">
-      <button class="btn-banner" onclick="filterDelayedOnly()">View Delayed Shipments</button>
-      <button class="btn-close-banner" onclick="closeDelayBanner()">&times;</button>
-    </div>
-  </div>
+  <!-- 2. Main Content Container -->
+  <div class="container">
 
-  <!-- Key Performance Indicators (KPI Cards) -->
-  <section class="kpi-section">
-    <div class="kpi-card">
-      <div class="kpi-icon blue-bg">&#128230;</div>
-      <div class="kpi-text">
-        <span class="kpi-label">TOTAL SHIPMENTS</span>
-        <h3 id="kpiTotal">6</h3>
-        <span class="kpi-sub">Managed Cargo</span>
+    <!-- Active Bottleneck Alert Banner -->
+    <div id="bottleneckBanner" class="bottleneck-alert">
+      <div class="alert-icon">&#9888;</div>
+      <div class="alert-text">
+        <strong>Supply Chain Bottleneck Alert:</strong>
+        <span id="alertMessage">Shipment SHP-101 is delayed at Nagpur Regional Warehouse (+24h delay).</span>
       </div>
+      <button class="btn btn-warning" onclick="highlightBottleneck()">View Delayed Shipment</button>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-icon cyan-bg">&#128666;</div>
-      <div class="kpi-text">
-        <span class="kpi-label">IN TRANSIT</span>
-        <h3 id="kpiInTransit">4</h3>
-        <span class="kpi-sub">Active Corridors</span>
+    <!-- KPI Summary Counters -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <h3>Total Shipments</h3>
+        <p id="kpiTotal" class="kpi-number">4</p>
+        <span class="kpi-sub">Across All Routes</span>
       </div>
-    </div>
-
-    <div class="kpi-card kpi-alert">
-      <div class="kpi-icon red-bg">&#9200;</div>
-      <div class="kpi-text">
-        <span class="kpi-label text-red">BOTTLENECKS / DELAYS</span>
-        <h3 id="kpiDelayed" class="text-red">2</h3>
-        <span class="kpi-sub text-red">Require Attention</span>
+      <div class="kpi-card">
+        <h3>In Transit</h3>
+        <p id="kpiInTransit" class="kpi-number text-blue">2</p>
+        <span class="kpi-sub">Moving on Schedule</span>
+      </div>
+      <div class="kpi-card">
+        <h3>Delayed / Bottlenecks</h3>
+        <p id="kpiDelayed" class="kpi-number text-red">1</p>
+        <span class="kpi-sub">Requires Action</span>
+      </div>
+      <div class="kpi-card">
+        <h3>Delivered</h3>
+        <p id="kpiDelivered" class="kpi-number text-green">1</p>
+        <span class="kpi-sub">Completed Deliveries</span>
       </div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-icon green-bg">&#9989;</div>
-      <div class="kpi-text">
-        <span class="kpi-label">DELIVERED RATE</span>
-        <h3 id="kpiDeliveredRate">83.3%</h3>
-        <span class="kpi-sub">On-Time SLA</span>
-      </div>
-    </div>
+    <!-- Two-Column Layout: Tracking Panel on Left, Create Form on Right -->
+    <div class="main-grid">
 
-    <div class="kpi-card">
-      <div class="kpi-icon amber-bg">&#8987;</div>
-      <div class="kpi-text">
-        <span class="kpi-label">AVG HUB DWELL</span>
-        <h3 id="kpiAvgDwell">16.4 h</h3>
-        <span class="kpi-sub">SLA Target &le; 18h</span>
-      </div>
-    </div>
-  </section>
+      <!-- LEFT COLUMN: Live 5-Stage Tracker & Shipment Details -->
+      <div class="card tracking-panel">
+        <div class="card-header">
+          <h2>Live Shipment Tracking & Stage Visibility</h2>
+          <span id="detailBadge" class="badge badge-warning">Delayed</span>
+        </div>
 
-  <!-- Main Container -->
-  <main class="main-content">
-
-    <!-- TAB 1: LIVE TRACKING DASHBOARD -->
-    <section id="tabDashboard" class="tab-view active">
-      <div class="dashboard-grid">
-
-        <!-- Left Column: Search, Filters & Shipment List -->
-        <div class="left-panel">
-          
-          <div class="search-card">
-            <input type="text" id="searchInput" placeholder="Search ID, cargo, city, or carrier..." oninput="handleSearch()">
-            
-            <div class="filter-pills">
-              <button class="pill active" onclick="setFilter('All', this)">All (<span id="countAll">6</span>)</button>
-              <button class="pill" onclick="setFilter('Active', this)">In Transit (<span id="countActive">4</span>)</button>
-              <button class="pill pill-danger" onclick="setFilter('Delayed', this)">Delayed (<span id="countDelayed">2</span>)</button>
-              <button class="pill pill-success" onclick="setFilter('Delivered', this)">Delivered (<span id="countDelivered">1</span>)</button>
+        <!-- 5-Stage Transport Milestone Tracker -->
+        <div class="tracker-box">
+          <p class="tracker-title">5-Stage Transport Route (Supplier to Customer):</p>
+          <div class="stage-steps">
+            <div id="step-0" class="step done">
+              <div class="step-num">1</div>
+              <div class="step-label">Supplier Dispatched</div>
             </div>
+            <div class="step-line" id="line-0"></div>
 
-            <div class="select-row">
-              <select id="categorySelect" onchange="handleSearch()">
-                <option value="">All Categories</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Pharmaceuticals">Pharmaceuticals</option>
-                <option value="Automotive">Automotive</option>
-                <option value="Textiles">Textiles</option>
-                <option value="Telecom">Telecom</option>
+            <div id="step-1" class="step done">
+              <div class="step-num">2</div>
+              <div class="step-label">Transit Hub</div>
+            </div>
+            <div class="step-line" id="line-1"></div>
+
+            <div id="step-2" class="step active">
+              <div class="step-num">3</div>
+              <div class="step-label">Regional Warehouse</div>
+            </div>
+            <div class="step-line" id="line-2"></div>
+
+            <div id="step-3" class="step">
+              <div class="step-num">4</div>
+              <div class="step-label">Out for Delivery</div>
+            </div>
+            <div class="step-line" id="line-3"></div>
+
+            <div id="step-4" class="step">
+              <div class="step-num">5</div>
+              <div class="step-label">Delivered</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Shipment Details Card -->
+        <div class="shipment-info">
+          <div class="info-row">
+            <div>
+              <span class="info-label">Shipment ID:</span>
+              <p id="detailId" class="info-value">SHP-101</p>
+            </div>
+            <div>
+              <span class="info-label">Cargo / Goods:</span>
+              <p id="detailCargo" class="info-value">Microcontrollers & Sensors</p>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div>
+              <span class="info-label">Supplier (Origin):</span>
+              <p id="detailOrigin" class="info-value">Foxconn Plant (Pune)</p>
+            </div>
+            <div>
+              <span class="info-label">Customer (Destination):</span>
+              <p id="detailDest" class="info-value">Tata Motors (Hosur)</p>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div>
+              <span class="info-label">Logistics Carrier:</span>
+              <p id="detailCarrier" class="info-value">BlueDart Express</p>
+            </div>
+            <div>
+              <span class="info-label">Current Stage:</span>
+              <p id="detailStage" class="info-value">Stage 3: Regional Warehouse</p>
+            </div>
+          </div>
+
+          <!-- Bottleneck Note (Shows if delayed) -->
+          <div id="delayNoteBox" class="delay-note">
+            <strong>Bottleneck Reason:</strong>
+            <span id="delayReasonText">Conveyor breakdown at bay #4 in Nagpur Warehouse (+24h delay).</span>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <button class="btn btn-primary" onclick="advanceStage()">&#9654; Move to Next Stage</button>
+            <button class="btn btn-danger" onclick="markDelayed()">&#9888; Report Delay / Bottleneck</button>
+            <button class="btn btn-secondary" onclick="markOnSchedule()">&#10004; Mark On Schedule</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Add New Shipment Form -->
+      <div class="card form-panel">
+        <div class="card-header">
+          <h2>Create New Shipment</h2>
+        </div>
+        <form id="createShipmentForm" onsubmit="handleCreateShipment(event)">
+          <div class="form-group">
+            <label for="shipmentId">Shipment ID *</label>
+            <input type="text" id="shipmentId" placeholder="e.g. SHP-105" required>
+          </div>
+
+          <div class="form-group">
+            <label for="cargoTitle">Cargo Description *</label>
+            <input type="text" id="cargoTitle" placeholder="e.g. Industrial Automation Motors" required>
+          </div>
+
+          <div class="form-group">
+            <label for="supplierOrigin">Supplier (Origin) *</label>
+            <input type="text" id="supplierOrigin" placeholder="e.g. Foxconn Factory, Pune" required>
+          </div>
+
+          <div class="form-group">
+            <label for="customerDest">Customer (Destination) *</label>
+            <input type="text" id="customerDest" placeholder="e.g. Tata Motors Plant, Hosur" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="carrierName">Carrier Service</label>
+              <select id="carrierName">
+                <option value="BlueDart Express">BlueDart Express</option>
+                <option value="DHL Supply Chain">DHL Supply Chain</option>
+                <option value="Gati KWE Logistics">Gati KWE Logistics</option>
+                <option value="Delhivery Freight">Delhivery Freight</option>
               </select>
+            </div>
 
-              <select id="prioritySelect" onchange="handleSearch()">
-                <option value="">All Priorities</option>
-                <option value="Urgent">Urgent</option>
-                <option value="Express">Express</option>
-                <option value="Standard">Standard</option>
+            <div class="form-group">
+              <label for="initialStage">Starting Stage</label>
+              <select id="initialStage">
+                <option value="0">1. Supplier Dispatched</option>
+                <option value="1">2. In Transit Hub</option>
+                <option value="2">3. Regional Warehouse</option>
               </select>
             </div>
           </div>
 
-          <!-- Shipment Cards List -->
-          <div id="shipmentList" class="shipment-list">
-            <!-- Dynamically populated by script.js -->
-          </div>
-
-        </div>
-
-        <!-- Right Column: Selected Shipment Detail Inspector -->
-        <div class="right-panel">
-          <div class="detail-card">
-            
-            <!-- Detail Header -->
-            <div class="detail-header">
-              <div>
-                <div class="header-tags">
-                  <h2 id="detailId">SHP-2026-8810</h2>
-                  <span id="detailStatusBadge" class="badge badge-danger">Delayed</span>
-                  <span id="detailPriorityBadge" class="badge badge-warning">Urgent Priority</span>
-                </div>
-                <h3 id="detailTitle" class="cargo-title">High-Precision Industrial Microcontrollers</h3>
-              </div>
-
-              <!-- Quick Action Buttons -->
-              <div class="action-buttons">
-                <button class="btn btn-primary" onclick="advanceStage()">Advance Stage &rarr;</button>
-                <button class="btn btn-secondary" onclick="revertStage()">Undo</button>
-                <button class="btn btn-danger" onclick="openModal('delayModal')">Report Bottleneck</button>
-                <button class="btn btn-outline" onclick="openModal('manifestModal')">Print Waybill</button>
-              </div>
-            </div>
-
-            <!-- Supply Chain Milestone Progress Track -->
-            <div class="milestone-box">
-              <div class="milestone-title-row">
-                <span class="section-subtitle">SUPPLY CHAIN JOURNEY PROGRESS</span>
-                <span id="detailProgressText" class="progress-percent">40% Completed</span>
-              </div>
-
-              <div id="milestoneTrack" class="milestone-track">
-                <!-- 5 Steps populated by script.js -->
-              </div>
-            </div>
-
-            <!-- Active Bottleneck Alert Callout Box -->
-            <div id="bottleneckCallout" class="bottleneck-callout">
-              <div class="callout-left">
-                <span class="callout-icon">&#9888;</span>
-                <div>
-                  <h4 id="bottleneckFacility">Active Bottleneck: Nagpur Central Consolidation Warehouse</h4>
-                  <p id="bottleneckReason">Automated conveyor sorting breakdown at bay #4. Dwell time: 42h (SLA: 18h).</p>
-                  <p id="bottleneckImpact" class="impact-text">Impact: Arrival pushed back by 1.5 days. Rerouting via South corridor recommended.</p>
-                </div>
-              </div>
-              <button class="btn btn-success" onclick="resolveDelay()">Resolve Delay</button>
-            </div>
-
-            <!-- Visual Supply Chain Corridor Map / Route Diagram -->
-            <div class="route-map-box">
-              <div class="route-header">
-                <span class="section-subtitle">SUPPLY CHAIN ROUTE & CORRIDOR MAP</span>
-                <span class="route-hint">Supplier Factory &rarr; Intermediate Transit Nodes &rarr; Customer Destination</span>
-              </div>
-              
-              <div id="visualCorridor" class="corridor-canvas">
-                <!-- Visual Nodes and Route line drawn by script.js -->
-              </div>
-            </div>
-
-            <!-- Logistics Specs Grid -->
-            <div class="specs-grid">
-              <div class="spec-item">
-                <span class="spec-label">ORIGIN SUPPLIER</span>
-                <strong id="detailOrigin">Foxconn Facility (Pune)</strong>
-              </div>
-              <div class="spec-item">
-                <span class="spec-label">DESTINATION CUSTOMER</span>
-                <strong id="detailDestination">Tata Electronics (Hosur)</strong>
-              </div>
-              <div class="spec-item">
-                <span class="spec-label">CARRIER PARTNER</span>
-                <strong id="detailCarrier">BlueDart Express (Road)</strong>
-              </div>
-              <div class="spec-item">
-                <span class="spec-label">EST. DELIVERY DATE</span>
-                <strong id="detailDeliveryDate" class="text-amber">Oct 21, 2026</strong>
-              </div>
-            </div>
-
-            <!-- Status Timeline & Checkpoint Logs -->
-            <div class="timeline-box">
-              <div class="timeline-header-row">
-                <span class="section-subtitle">STATUS TIMELINE & CHECKPOINT AUDIT LOG</span>
-                <span class="timeline-count">Chronological Checkpoints</span>
-              </div>
-
-              <!-- Quick Live Note Injection Form (Viva Demo) -->
-              <div class="add-log-row">
-                <input type="text" id="logInput" placeholder="Enter live checkpoint update (e.g. 'Customs clearance passed', 'Driver change at toll 3')...">
-                <button class="btn btn-primary" onclick="addTimelineLog()">Add Checkpoint</button>
-              </div>
-
-              <div id="timelineList" class="timeline-list">
-                <!-- Timeline items populated by script.js -->
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- TAB 2: DWELL ANALYTICS VIEW -->
-    <section id="tabAnalytics" class="tab-view">
-      <div class="page-card">
-        <div class="page-header">
-          <div>
-            <h2>Supply Chain Bottleneck & Facility Dwell Time Analytics</h2>
-            <p class="page-desc">Monitoring dwell latency across warehouses, highway corridors, and transit hubs against the 18-hour SLA threshold.</p>
-          </div>
-          <span class="badge badge-danger">Maximum SLA Limit: 18h</span>
-        </div>
-
-        <div class="analytics-grid">
-          <!-- Custom Visual Dwell Bar Chart -->
-          <div class="chart-box">
-            <h3>Average Dwell Hours by Supply Chain Node</h3>
-            <p class="chart-desc">Actual Dwell Time compared against contractual 18-hour SLA limit</p>
-            
-            <div class="bar-chart-container">
-              <div class="chart-row">
-                <span class="bar-label">Supplier Dispatch</span>
-                <div class="bar-track">
-                  <div class="bar-fill blue-fill" style="width: 25%;">6.4h</div>
-                </div>
-                <span class="sla-status status-ok">Within SLA</span>
-              </div>
-
-              <div class="chart-row">
-                <span class="bar-label">Inter-State Corridor</span>
-                <div class="bar-track">
-                  <div class="bar-fill cyan-fill" style="width: 60%;">18.2h</div>
-                </div>
-                <span class="sla-status status-warn">Near SLA</span>
-              </div>
-
-              <div class="chart-row">
-                <span class="bar-label">Regional Warehouse</span>
-                <div class="bar-track">
-                  <div class="bar-fill red-fill" style="width: 95%;">28.5h</div>
-                </div>
-                <span class="sla-status status-fail">SLA Breached!</span>
-              </div>
-
-              <div class="chart-row">
-                <span class="bar-label">Last-Mile Delivery</span>
-                <div class="bar-track">
-                  <div class="bar-fill green-fill" style="width: 20%;">5.1h</div>
-                </div>
-                <span class="sla-status status-ok">Within SLA</span>
-              </div>
-
-              <div class="sla-target-line-note">
-                <span class="target-indicator"></span> <strong>SLA Target Benchmark:</strong> 18.0 Hours Max
-              </div>
-            </div>
-          </div>
-
-          <!-- Root Causes Table / Breakdown -->
-          <div class="chart-box">
-            <h3>Primary Causes of Supply Chain Delays</h3>
-            <p class="chart-desc">Historical breakdown of operational disruptions across networks</p>
-            
-            <div class="causes-list">
-              <div class="cause-item">
-                <div class="cause-info">
-                  <strong>Warehouse Sorter / Conveyor Malfunction</strong>
-                  <span>42% of total delay occurrences</span>
-                </div>
-                <div class="cause-bar"><div class="fill-red" style="width: 42%;"></div></div>
-              </div>
-
-              <div class="cause-item">
-                <div class="cause-info">
-                  <strong>Monsoon Landslides / Highway Closures</strong>
-                  <span>28% of total delay occurrences</span>
-                </div>
-                <div class="cause-bar"><div class="fill-amber" style="width: 28%;"></div></div>
-              </div>
-
-              <div class="cause-item">
-                <div class="cause-info">
-                  <strong>Port & Customs Clearance Documentation Holds</strong>
-                  <span>15% of total delay occurrences</span>
-                </div>
-                <div class="cause-bar"><div class="fill-cyan" style="width: 15%;"></div></div>
-              </div>
-
-              <div class="cause-item">
-                <div class="cause-info">
-                  <strong>Fleet Vehicle Mechanical Breakdown</strong>
-                  <span>15% of total delay occurrences</span>
-                </div>
-                <div class="cause-bar"><div class="fill-blue" style="width: 15%;"></div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Facility Risk Registry Table -->
-        <div class="table-container-card">
-          <h3>Facility Bottleneck Risk Registry & Mitigation Actions</h3>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>FACILITY NAME</th>
-                <th>FACILITY TYPE</th>
-                <th>AVG DWELL</th>
-                <th>SLA TARGET</th>
-                <th>STATUS</th>
-                <th>PRIMARY ROOT CAUSE</th>
-                <th>RECOMMENDED MITIGATION</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Nagpur Central Warehouse Hub</strong></td>
-                <td>Regional Sorting Center</td>
-                <td class="text-red font-bold">42.0 h</td>
-                <td>18.0 h</td>
-                <td><span class="badge badge-danger">Critical Bottleneck</span></td>
-                <td>Conveyor belt breakdown at bay #4</td>
-                <td class="text-green">Deploy southern highway bypass route</td>
-              </tr>
-              <tr>
-                <td><strong>Belagavi Transshipment Hub</strong></td>
-                <td>Highway Corridor Hub</td>
-                <td class="text-red font-bold">38.0 h</td>
-                <td>16.0 h</td>
-                <td><span class="badge badge-danger">Critical Bottleneck</span></td>
-                <td>NH-48 Ghat section heavy landslide</td>
-                <td class="text-green">Reroute heavy trucks via coastal NH-66</td>
-              </tr>
-              <tr>
-                <td><strong>Ahmedabad Western Terminal</strong></td>
-                <td>Regional Warehouse</td>
-                <td class="text-amber font-bold">20.0 h</td>
-                <td>22.0 h</td>
-                <td><span class="badge badge-warning">At Risk (Near SLA)</span></td>
-                <td>High seasonal volume capacity backlog</td>
-                <td class="text-green">Activate secondary sorting shift team</td>
-              </tr>
-              <tr>
-                <td><strong>Navi Mumbai Gateway Terminal</strong></td>
-                <td>Transit Gateway Hub</td>
-                <td>14.0 h</td>
-                <td>12.0 h</td>
-                <td><span class="badge badge-info">Minor Delay</span></td>
-                <td>JNPT customs document queue</td>
-                <td class="text-green">Pre-verify electronic RFID waybill</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- TAB 3: MASTER SHIPMENT HISTORY VIEW -->
-    <section id="tabHistory" class="tab-view">
-      <div class="page-card">
-        <div class="page-header">
-          <div>
-            <h2>Master Shipment Ledger & Historical Archive</h2>
-            <p class="page-desc">Complete record of goods moved between suppliers, warehouses, and customer endpoints.</p>
-          </div>
-          <button class="btn btn-primary" onclick="exportToCSV()">Export to CSV File</button>
-        </div>
-
-        <div class="table-container-card">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>TRACKING ID</th>
-                <th>CARGO TITLE</th>
-                <th>CATEGORY</th>
-                <th>CARRIER</th>
-                <th>ORIGIN</th>
-                <th>DESTINATION</th>
-                <th>CURRENT STAGE</th>
-                <th>STATUS</th>
-                <th>ACTION</th>
-              </tr>
-            </thead>
-            <tbody id="historyTableBody">
-              <!-- Dynamically populated by script.js -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 4: PROJECT DETAILS & VIVA VIEW -->
-    <section id="tabDetails" class="tab-view">
-      <div class="page-card">
-        <div class="page-header">
-          <div>
-            <h2>CA1 Project-Based Assessment: LogiPulse</h2>
-            <p class="page-desc">Problem Statement #8: Supply Chain Shipment Visibility & Bottleneck Tracking Interface</p>
-          </div>
-          <span class="badge badge-info">Course: INT219 / Front-End Web Development</span>
-        </div>
-
-        <!-- Student Details Card -->
-        <div class="info-card-grid">
-          <div class="info-card">
-            <h4>Student Developer</h4>
-            <p><strong>Name:</strong> Datta Sai</p>
-            <p><strong>Registration Number:</strong> 12623781</p>
-            <p><strong>Problem Statement:</strong> #8 (Supply Chain Visibility)</p>
-          </div>
-
-          <div class="info-card">
-            <h4>Project Implementation</h4>
-            <p><strong>Technologies:</strong> Pure HTML5, CSS3, JavaScript (ES6)</p>
-            <p><strong>Persistence:</strong> Browser LocalStorage (Offline-First)</p>
-            <p><strong>Deployment:</strong> GitHub Pages</p>
-          </div>
-
-          <div class="info-card">
-            <h4>Core Requirements Met</h4>
-            <p>&#10003; 1. Shipment Creation & Validation</p>
-            <p>&#10003; 2. Origin & Destination Mapping</p>
-            <p>&#10003; 3. 5-Stage Transport Milestone Tracking</p>
-            <p>&#10003; 4. Chronological Status Timeline</p>
-            <p>&#10003; 5. Delay Alerts & Bottleneck Detection</p>
-            <p>&#10003; 6. Master Shipment History & CSV Export</p>
-          </div>
-        </div>
-
-        <!-- Viva Cheat Sheet -->
-        <div class="viva-questions-box">
-          <h3>Quick Viva Question & Answer Reference</h3>
-          
-          <div class="viva-item">
-            <strong>Q1: What is the main objective of your project?</strong>
-            <p>To create a shipment management interface that provides continuous visibility into goods moving across supply chain stages and automatically detects bottlenecks when dwell time at warehouses exceeds the 18-hour SLA limit.</p>
-          </div>
-
-          <div class="viva-item">
-            <strong>Q2: How does your bottleneck detection work in JavaScript?</strong>
-            <p>In <code>script.js</code>, each shipment checks if its dwell hours exceed the SLA threshold (18h) or if an operational delay was logged. If true, the status becomes 'Delayed', the alert banner appears, and the milestone turns red.</p>
-          </div>
-
-          <div class="viva-item">
-            <strong>Q3: How is data saved so that it is not lost on page reload?</strong>
-            <p>Using the HTML5 <code>localStorage</code> API. Whenever a shipment is created, advanced, or updated, we call <code>localStorage.setItem('logipulse_shipments', JSON.stringify(shipments))</code>.</p>
-          </div>
-
-          <div class="viva-item">
-            <strong>Q4: How did you implement the 5 transport milestones?</strong>
-            <p>Through an array of 5 stages: Supplier Dispatched, In Transit Hub, Regional Warehouse, Out for Delivery, and Delivered. A numerical index (0 to 4) tracks progress, and clicking 'Advance Stage' increments this index and appends a timestamped checkpoint log.</p>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ================= MODALS ================= -->
-
-  <!-- MODAL 1: Create New Shipment -->
-  <div id="createModal" class="modal-overlay">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>Create New Supply Chain Shipment</h3>
-        <button class="modal-close" onclick="closeModal('createModal')">&times;</button>
+          <button type="submit" class="btn btn-success btn-block">+ Add Shipment</button>
+        </form>
       </div>
 
-      <form id="createShipmentForm" onsubmit="handleCreateSubmit(event)">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Cargo / Goods Title *</label>
-            <input type="text" id="newTitle" required placeholder="e.g. 500x Solar Inverters">
-          </div>
-          <div class="form-group">
-            <label>Category *</label>
-            <select id="newCategory" required>
-              <option value="Electronics">Electronics</option>
-              <option value="Pharmaceuticals">Pharmaceuticals</option>
-              <option value="Automotive">Automotive</option>
-              <option value="Textiles">Textiles</option>
-              <option value="Telecom">Telecom</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Carrier Partner *</label>
-            <select id="newCarrier" required>
-              <option value="BlueDart Express">BlueDart Express</option>
-              <option value="DHL Global ColdChain">DHL Global ColdChain</option>
-              <option value="Delhivery Freight">Delhivery Freight</option>
-              <option value="FedEx Critical">FedEx Critical</option>
-              <option value="TCI Freight">TCI Freight</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Transport Mode *</label>
-            <select id="newTransportMode" required>
-              <option value="Road Express">Road Express</option>
-              <option value="Air Freight">Air Freight</option>
-              <option value="Heavy Rail">Heavy Rail</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Priority *</label>
-            <select id="newPriority" required>
-              <option value="Urgent">Urgent Priority</option>
-              <option value="Express">Express</option>
-              <option value="Standard">Standard</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Origin Supplier Plant *</label>
-            <input type="text" id="newOrigin" required placeholder="e.g. Foxconn Facility, Pune">
-          </div>
-          <div class="form-group">
-            <label>Destination Customer *</label>
-            <input type="text" id="newDestination" required placeholder="e.g. Tata Assembly, Hosur">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Gross Weight (kg) *</label>
-            <input type="text" id="newWeight" required placeholder="e.g. 450 kg">
-          </div>
-          <div class="form-group">
-            <label>Declared Value (INR) *</label>
-            <input type="text" id="newValue" required placeholder="e.g. ₹ 18,50,000">
-          </div>
-          <div class="form-group">
-            <label>Est. Delivery Date *</label>
-            <input type="date" id="newDeliveryDate" required>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeModal('createModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Dispatch & Save Shipment</button>
-        </div>
-      </form>
     </div>
-  </div>
 
-  <!-- MODAL 2: Report Bottleneck / Delay -->
-  <div id="delayModal" class="modal-overlay">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="text-red">Report Supply Chain Bottleneck / Delay</h3>
-        <button class="modal-close" onclick="closeModal('delayModal')">&times;</button>
-      </div>
-
-      <form id="delayForm" onsubmit="handleDelaySubmit(event)">
-        <div class="form-group">
-          <label>Facility Name / Stagnation Location *</label>
-          <input type="text" id="delayFacilityInput" required placeholder="e.g. Nagpur Central Consolidation Warehouse">
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Disruption Root Cause *</label>
-            <select id="delayCauseCategory" required>
-              <option value="Conveyor / Sorter Breakdown">Sorter / Conveyor Malfunction</option>
-              <option value="Severe Weather / Monsoon Landslide">Severe Weather / Landslide</option>
-              <option value="Port & Customs Documentation Hold">Port & Customs Documentation Queue</option>
-              <option value="Warehouse Overcapacity Backlog">Warehouse Overcapacity (>90% full)</option>
-              <option value="Carrier Vehicle Breakdown">Vehicle Mechanical Failure</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Estimated Delay (Hours) *</label>
-            <input type="number" id="delayHoursInput" min="1" max="168" value="24" required>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Operational Impact & Mitigation Recommendation *</label>
-          <textarea id="delayImpactInput" rows="3" required placeholder="Explain why cargo is stuck and the mitigation step taken..."></textarea>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeModal('delayModal')">Cancel</button>
-          <button type="submit" class="btn btn-danger">Apply Bottleneck Alert</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL 3: Printable Shipping Manifest / Bill of Lading -->
-  <div id="manifestModal" class="modal-overlay">
-    <div class="modal-card manifest-card">
-      <div class="modal-header">
-        <h3>Official Multimodal Bill of Lading & Waybill</h3>
-        <div>
-          <button class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>
-          <button class="modal-close" onclick="closeModal('manifestModal')">&times;</button>
+    <!-- 3. Full Width Shipment History Table Section -->
+    <div class="card table-panel">
+      <div class="table-header-bar">
+        <h2>All Shipments & Bottleneck History</h2>
+        
+        <!-- Search and Filter Controls -->
+        <div class="table-controls">
+          <input type="text" id="searchInput" placeholder="Search by ID, Origin, Destination..." onkeyup="searchShipments()">
+          <select id="filterStatus" onchange="filterShipments()">
+            <option value="All">All Statuses</option>
+            <option value="In Transit">In Transit</option>
+            <option value="Delayed">Delayed (Bottleneck)</option>
+            <option value="Delivered">Delivered</option>
+          </select>
+          <button class="btn btn-secondary" onclick="resetData()">Reset Default Data</button>
         </div>
       </div>
 
-      <div id="manifestContent" class="manifest-content">
-        <!-- Dynamically generated manifest HTML -->
+      <!-- HTML Data Table -->
+      <div class="table-responsive">
+        <table class="shipment-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cargo Goods</th>
+              <th>Supplier (Origin)</th>
+              <th>Customer (Destination)</th>
+              <th>Carrier</th>
+              <th>Current Stage</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="shipmentTableBody">
+            <!-- Dynamic rows will be inserted by JavaScript -->
+          </tbody>
+        </table>
       </div>
     </div>
+
   </div>
 
-  <!-- Footer -->
+  <!-- 4. Footer -->
   <footer class="footer">
-    <div class="footer-container">
-      <span>CA1 Project-Based Assessment | Problem #8: Supply Chain Shipment Visibility</span>
-      <span>Developer: <strong>Datta Sai (12623781)</strong> | INT219 Front-End Web Development</span>
-    </div>
+    <p>CA1 Project-Based Assessment | Problem Statement #8: Supply Chain Shipment Visibility</p>
+    <p>Student: <strong>Datta Sai</strong> | Registration No: <strong>12623781</strong> | Course: <strong>INT219 Front-End Web Development</strong></p>
   </footer>
 
-  <script src="script.js"></script>
+  <!-- JavaScript File -->
+  <script src="app.js"></script>
 </body>
 </html>
