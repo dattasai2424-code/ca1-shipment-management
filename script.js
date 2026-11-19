@@ -1,10 +1,3 @@
-/* =========================================================
-   LogiPulse - Supply Chain Shipment Management Interface
-   Student Developer: Datta Sai (Registration No: 12623781)
-   Course: INT219 Front-End Web Development | Problem #8
-   ========================================================= */
-
-// 1. Five Standard Transport Stages (Supplier to Customer)
 var STAGES = [
   "Supplier Dispatched",
   "In Transit Hub",
@@ -13,7 +6,6 @@ var STAGES = [
   "Delivered"
 ];
 
-// 2. Initial Sample Shipment Data
 var DEFAULT_SHIPMENTS = [
   {
     id: "SHP-101",
@@ -21,7 +13,9 @@ var DEFAULT_SHIPMENTS = [
     origin: "Foxconn Plant (Pune)",
     destination: "Tata Motors (Hosur)",
     carrier: "BlueDart Express",
-    stageIndex: 2, // Stage 3: Regional Warehouse
+    date: "Nov 16, 2026",
+    eta: "Nov 21, 2026",
+    stageIndex: 2,
     status: "Delayed",
     delayReason: "Conveyor breakdown at bay #4 in Nagpur Regional Warehouse (+24h delay)."
   },
@@ -31,7 +25,9 @@ var DEFAULT_SHIPMENTS = [
     origin: "Bharat Biotech (Hyderabad)",
     destination: "AIIMS Apex Center (New Delhi)",
     carrier: "DHL Supply Chain",
-    stageIndex: 1, // Stage 2: In Transit Hub
+    date: "Nov 17, 2026",
+    eta: "Nov 20, 2026",
+    stageIndex: 1,
     status: "In Transit",
     delayReason: ""
   },
@@ -41,7 +37,9 @@ var DEFAULT_SHIPMENTS = [
     origin: "Bosch Manufacturing (Nashik)",
     destination: "Mahindra Auto Plant (Chennai)",
     carrier: "Gati KWE Logistics",
-    stageIndex: 4, // Stage 5: Delivered
+    date: "Nov 14, 2026",
+    eta: "Nov 18, 2026",
+    stageIndex: 4,
     status: "Delivered",
     delayReason: ""
   },
@@ -51,26 +49,24 @@ var DEFAULT_SHIPMENTS = [
     origin: "Adani Solar Hub (Mundra)",
     destination: "Renew Power (Bengaluru)",
     carrier: "Delhivery Freight",
-    stageIndex: 0, // Stage 1: Supplier Dispatched
+    date: "Nov 18, 2026",
+    eta: "Nov 23, 2026",
+    stageIndex: 0,
     status: "In Transit",
     delayReason: ""
   }
 ];
 
-// Global Working Array and Active Selected ID
 var shipments = [];
 var selectedId = "SHP-101";
 
-// 3. Initialize Application on Window Load
 window.onload = function() {
   resetData();
 };
 
-// 4. Reset Data to Defaults
 function resetData() {
   shipments = [];
   for (var i = 0; i < DEFAULT_SHIPMENTS.length; i++) {
-    // Create copy of each object
     var item = DEFAULT_SHIPMENTS[i];
     shipments.push({
       id: item.id,
@@ -78,6 +74,8 @@ function resetData() {
       origin: item.origin,
       destination: item.destination,
       carrier: item.carrier,
+      date: item.date,
+      eta: item.eta,
       stageIndex: item.stageIndex,
       status: item.status,
       delayReason: item.delayReason
@@ -89,7 +87,6 @@ function resetData() {
   displaySelectedShipment();
 }
 
-// 5. Calculate and Display KPI Summary Counters
 function updateKPIs() {
   var total = shipments.length;
   var inTransit = 0;
@@ -112,13 +109,12 @@ function updateKPIs() {
   document.getElementById("kpiDelivered").innerText = delivered;
 }
 
-// 6. Render Shipment Table
 function renderTable(list) {
   var tbody = document.getElementById("shipmentTableBody");
   tbody.innerHTML = "";
 
   if (list.length === 0) {
-    tbody.innerHTML = "<tr><td colspan='8' style='text-align:center; padding: 20px; color: #94a3b8;'>No shipments match your criteria.</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='9' style='text-align:center; padding: 20px; color: #94a3b8;'>No shipments match your criteria.</td></tr>";
     return;
   }
 
@@ -126,7 +122,6 @@ function renderTable(list) {
     var s = list[i];
     var tr = document.createElement("tr");
 
-    // Status badge class
     var badgeClass = "badge-primary";
     if (s.status === "Delivered") {
       badgeClass = "badge-success";
@@ -142,21 +137,20 @@ function renderTable(list) {
       "<td>" + s.origin + "</td>" +
       "<td>" + s.destination + "</td>" +
       "<td>" + s.carrier + "</td>" +
+      "<td>" + s.date + "</td>" +
       "<td>" + stageText + "</td>" +
       "<td><span class='badge " + badgeClass + "'>" + s.status + "</span></td>" +
-      "<td><button class='btn btn-primary' onclick='selectShipment(\"" + s.id + "\")'>Track</button></td>";
+      "<td><button class='btn btn-secondary' onclick='selectShipment(\"" + s.id + "\")'>Track</button></td>";
 
     tbody.appendChild(tr);
   }
 }
 
-// 7. Select a Shipment to View in Tracker
 function selectShipment(id) {
   selectedId = id;
   displaySelectedShipment();
 }
 
-// 8. Find Shipment Object by ID (Simple for-loop helper)
 function getShipmentById(id) {
   for (var i = 0; i < shipments.length; i++) {
     if (shipments[i].id === id) {
@@ -166,20 +160,19 @@ function getShipmentById(id) {
   return null;
 }
 
-// 9. Display Selected Shipment in 5-Stage Tracker & Detail Box
 function displaySelectedShipment() {
   var s = getShipmentById(selectedId);
   if (!s) return;
 
-  // Update text fields
   document.getElementById("detailId").innerText = s.id;
   document.getElementById("detailCargo").innerText = s.cargo;
   document.getElementById("detailOrigin").innerText = s.origin;
   document.getElementById("detailDest").innerText = s.destination;
   document.getElementById("detailCarrier").innerText = s.carrier;
+  document.getElementById("detailDate").innerText = s.date;
+  document.getElementById("detailEta").innerText = s.eta;
   document.getElementById("detailStage").innerText = "Stage " + (s.stageIndex + 1) + ": " + STAGES[s.stageIndex];
 
-  // Update Status Badge
   var badge = document.getElementById("detailBadge");
   badge.innerText = s.status;
   if (s.status === "Delivered") {
@@ -190,7 +183,6 @@ function displaySelectedShipment() {
     badge.className = "badge badge-primary";
   }
 
-  // Update Bottleneck / Delay Note Box
   var noteBox = document.getElementById("delayNoteBox");
   var reasonText = document.getElementById("delayReasonText");
   if (s.status === "Delayed" && s.delayReason) {
@@ -200,7 +192,6 @@ function displaySelectedShipment() {
     noteBox.style.display = "none";
   }
 
-  // Update 5-Stage Visual Progress Tracker
   for (var i = 0; i < 5; i++) {
     var stepEl = document.getElementById("step-" + i);
     var lineEl = document.getElementById("line-" + i);
@@ -223,24 +214,21 @@ function displaySelectedShipment() {
   }
 }
 
-// 10. Advance Shipment to Next Stage (e.g. Supplier -> Hub -> Warehouse -> Out -> Delivered)
 function advanceStage() {
   var s = getShipmentById(selectedId);
   if (!s) return;
 
   if (s.stageIndex >= 4) {
-    alert("Shipment " + s.id + " has already been Delivered to the customer!");
+    alert("Shipment " + s.id + " has already been Delivered to the customer.");
     return;
   }
 
   s.stageIndex++;
 
-  // If reached final stage, update status to Delivered
   if (s.stageIndex === 4) {
     s.status = "Delivered";
     s.delayReason = "";
   } else if (s.status === "Delayed") {
-    // If advancing from bottleneck, clear delay
     s.status = "In Transit";
     s.delayReason = "";
   }
@@ -248,16 +236,15 @@ function advanceStage() {
   updateKPIs();
   renderTable(shipments);
   displaySelectedShipment();
-  alert("Success: Shipment " + s.id + " moved to " + STAGES[s.stageIndex]);
+  alert("Shipment " + s.id + " moved to " + STAGES[s.stageIndex]);
 }
 
-// 11. Report Delay / Bottleneck on Current Shipment
 function markDelayed() {
   var s = getShipmentById(selectedId);
   if (!s) return;
 
   if (s.status === "Delivered") {
-    alert("Cannot report delay on an already delivered shipment!");
+    alert("Cannot report delay on an already delivered shipment.");
     return;
   }
 
@@ -269,13 +256,11 @@ function markDelayed() {
     renderTable(shipments);
     displaySelectedShipment();
 
-    // Update banner message
     document.getElementById("alertMessage").innerText = "Shipment " + s.id + " is delayed: " + s.delayReason;
     alert("Bottleneck recorded for shipment " + s.id);
   }
 }
 
-// 12. Mark Shipment On Schedule
 function markOnSchedule() {
   var s = getShipmentById(selectedId);
   if (!s) return;
@@ -290,10 +275,9 @@ function markOnSchedule() {
   updateKPIs();
   renderTable(shipments);
   displaySelectedShipment();
-  alert("Shipment " + s.id + " is now marked On Schedule!");
+  alert("Shipment " + s.id + " is marked On Schedule.");
 }
 
-// 13. Jump to Bottleneck Shipment
 function highlightBottleneck() {
   for (var i = 0; i < shipments.length; i++) {
     if (shipments[i].status === "Delayed") {
@@ -302,12 +286,11 @@ function highlightBottleneck() {
       return;
     }
   }
-  alert("No active bottlenecks found!");
+  alert("No active bottlenecks found.");
 }
 
-// 14. Handle Create New Shipment Form Submission
 function handleCreateShipment(event) {
-  event.preventDefault(); // Stop form from refreshing page
+  event.preventDefault();
 
   var id = document.getElementById("shipmentId").value.trim();
   var cargo = document.getElementById("cargoTitle").value.trim();
@@ -316,45 +299,40 @@ function handleCreateShipment(event) {
   var carrier = document.getElementById("carrierName").value;
   var stage = parseInt(document.getElementById("initialStage").value, 10);
 
-  // Check if ID already exists
   if (getShipmentById(id)) {
-    alert("A shipment with ID '" + id + "' already exists! Please use a unique ID.");
+    alert("A shipment with ID '" + id + "' already exists. Please use a unique ID.");
     return;
   }
 
-  // Determine initial status
   var status = "In Transit";
   if (stage === 4) {
     status = "Delivered";
   }
 
-  // Create new shipment object
   var newShipment = {
     id: id,
     cargo: cargo,
     origin: origin,
     destination: dest,
     carrier: carrier,
+    date: "Nov 19, 2026",
+    eta: "Nov 24, 2026",
     stageIndex: stage,
     status: status,
     delayReason: ""
   };
 
-  // Add to array
   shipments.push(newShipment);
   selectedId = id;
 
-  // Refresh UI
   updateKPIs();
   renderTable(shipments);
   displaySelectedShipment();
 
-  // Reset form
   document.getElementById("createShipmentForm").reset();
-  alert("Shipment " + id + " created successfully!");
+  alert("Shipment " + id + " created successfully.");
 }
 
-// 15. Search Shipments by ID, Origin, Destination, or Cargo
 function searchShipments() {
   var term = document.getElementById("searchInput").value.toLowerCase();
   var filtered = [];
@@ -374,7 +352,6 @@ function searchShipments() {
   renderTable(filtered);
 }
 
-// 16. Filter Shipments by Status Dropdown
 function filterShipments() {
   var statusVal = document.getElementById("filterStatus").value;
 
